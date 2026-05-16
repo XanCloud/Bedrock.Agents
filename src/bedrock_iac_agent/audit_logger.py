@@ -72,8 +72,10 @@ class AuditLogger:
         # Set default level to INFO
         self.logger.setLevel(logging.INFO)
 
-        # Remove existing handlers to avoid duplicates
-        self.logger.handlers.clear()
+        # Avoid clobbering handlers configured by setup_logging() if this
+        # initialises second (or vice-versa).
+        if self.logger.handlers:
+            return
 
         # Console handler with JSON formatter
         console_handler = logging.StreamHandler()

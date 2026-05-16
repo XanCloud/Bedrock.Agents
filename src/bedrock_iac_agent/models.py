@@ -87,13 +87,17 @@ class ModuleSchema:
 
 
 @dataclass
-class TfvarsContent:
-    """Generated tfvars file content."""
+class ConfigContent:
+    """Generated configuration file content."""
     content: str  # HCL-formatted content
     file_path: str  # Relative path in repository
     environment: Environment
     resource_type: ResourceType
     generated_at: datetime
+
+
+# Backward-compatible alias for Terraform-specific naming
+TfvarsContent = ConfigContent
 
 
 @dataclass

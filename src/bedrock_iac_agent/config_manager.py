@@ -120,7 +120,7 @@ class ConfigurationManager:
             exists the manager starts with defaults only.
 
     Raises:
-        ConfigurationError: If the config file exists but cannot be parsed or
+        ConfigParseError: If the config file exists but cannot be parsed or
             contains invalid values.
 
     Requirements: 5.2, 8.4, 11.4
@@ -282,7 +282,7 @@ class ConfigurationManager:
         """Parse a YAML config file and return the raw dictionary.
 
         Raises:
-            ConfigurationError: If the file cannot be parsed.
+            ConfigParseError: If the file cannot be parsed.
         """
         try:
             import yaml  # noqa: PLC0415
@@ -292,20 +292,20 @@ class ConfigurationManager:
             if data is None:
                 return {}
             if not isinstance(data, dict):
-                raise ConfigurationError(
+                raise ConfigParseError(
                     f"Config file {path} must contain a YAML mapping at the top level, "
                     f"got {type(data).__name__}."
                 )
             return data
         except ImportError as exc:
-            raise ConfigurationError(
+            raise ConfigParseError(
                 "PyYAML is required to load config.yaml. "
                 "Install it with: pip install pyyaml"
             ) from exc
         except Exception as exc:
-            if isinstance(exc, ConfigurationError):
+            if isinstance(exc, ConfigParseError):
                 raise
-            raise ConfigurationError(
+            raise ConfigParseError(
                 f"Failed to parse config file {path}: {exc}"
             ) from exc
 
@@ -372,5 +372,5 @@ class ConfigurationManager:
 # ---------------------------------------------------------------------------
 
 
-class ConfigurationError(Exception):
+class ConfigParseError(Exception):
     """Raised when the configuration file is invalid or cannot be loaded."""

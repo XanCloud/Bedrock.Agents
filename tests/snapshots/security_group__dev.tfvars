@@ -10,5 +10,11 @@
 # Module path : modules/security_group
 # Module ver  : 1.0.0
 # =============================================================================
+description = "Managed by Bedrock IaC Agent"  # Security group description
 environment = "dev"  # Deployment environment
-name = "mycompany-app-sg-dev"  # Name of the security_group
+security_group_name = "mycompany-app-sg-dev"  # Name of the security group
+vpc_id = "vpc-12345678"  # VPC ID to associate the security group with
+
+# --- Security parameters (managed by Golden Module) ---
+allow_all_ingress = false  # Deny all ingress by default
+enable_flow_logs = true  # Enable flow logging for the security group

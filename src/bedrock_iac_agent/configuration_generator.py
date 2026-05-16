@@ -2,12 +2,13 @@
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from .errors import GenerationError, ValidationError
 from .interfaces import IConfigurationGenerator
 from .models import (
+    ConfigContent,
     Environment,
     ModuleSchema,
     NamingConventions,
@@ -53,14 +54,14 @@ class ConfigurationGenerator(IConfigurationGenerator):
         """
         self.audit_logger = audit_logger
 
-    def generate_tfvars(
+    def generate_configuration(
         self,
         structured_request: StructuredRequest,
         golden_module: ModuleSchema,
         naming_conventions: Optional[NamingConventions] = None,
-    ) -> TfvarsContent:
+    ) -> ConfigContent:
         """
-        Generate tfvars file content from a StructuredRequest and Golden Module schema.
+        Generate configuration file content from a StructuredRequest and Golden Module schema.
 
         The generation pipeline:
         1. Validate requested parameters against the module schema
@@ -77,7 +78,7 @@ class ConfigurationGenerator(IConfigurationGenerator):
                                  if not provided.
 
         Returns:
-            TfvarsContent with HCL-formatted content and metadata.
+            ConfigContent with HCL-formatted content and metadata.
 
         Raises:
             ValueError: If the resource type in the request does not match the
@@ -189,12 +190,12 @@ class ConfigurationGenerator(IConfigurationGenerator):
 
             file_path = self._build_file_path(structured_request.environment, golden_module)
 
-            return TfvarsContent(
+            return ConfigContent(
                 content=commented_hcl,
                 file_path=file_path,
                 environment=structured_request.environment,
                 resource_type=structured_request.resource_type,
-                generated_at=datetime.utcnow(),
+                generated_at=datetime.now(timezone.utc),
             )
 
         except (ValidationError, ValueError):
@@ -204,7 +205,7 @@ class ConfigurationGenerator(IConfigurationGenerator):
             # Wrap unexpected errors in GenerationError (Requirement 12.5)
             gen_error = GenerationError(
                 message=(
-                    f"Failed to generate tfvars for "
+                    f"Failed to generate configuration for "
                     f"{golden_module.resource_type.value}: {exc}. "
                     "Please review the requested parameters and try again."
                 ),
@@ -220,18 +221,21 @@ class ConfigurationGenerator(IConfigurationGenerator):
                 self.audit_logger.log_error(
                     gen_error,
                     {
-                        "operation": "generate_tfvars",
+                        "operation": "generate_configuration",
                         "resource_type": golden_module.resource_type.value,
                         "request_id": structured_request.request_id,
                     },
                     error_code="GENERATION_ERROR",
                 )
             logger.error(
-                "Unexpected error generating tfvars for %s: %s",
+                "Unexpected error generating configuration for %s: %s",
                 golden_module.resource_type.value,
                 exc,
             )
             raise gen_error from exc
+
+    # Backward-compatible alias for the Terraform-specific name
+    generate_tfvars = generate_configuration
 
     # ------------------------------------------------------------------
     # apply_naming_conventions

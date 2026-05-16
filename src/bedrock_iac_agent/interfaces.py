@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from .models import (
+    ConfigContent,
     Environment,
     ModuleInfo,
     ModuleSchema,
@@ -32,12 +33,12 @@ class IConfigurationGenerator(ABC):
     """
 
     @abstractmethod
-    def generate_tfvars(
+    def generate_configuration(
         self,
         structured_request: StructuredRequest,
         golden_module: ModuleSchema,
         naming_conventions: Optional[NamingConventions] = None,
-    ) -> TfvarsContent:
+    ) -> ConfigContent:
         """Generate configuration file content from a StructuredRequest.
 
         Args:
@@ -47,7 +48,7 @@ class IConfigurationGenerator(ABC):
             naming_conventions: Optional naming conventions to apply.
 
         Returns:
-            TfvarsContent with formatted content and metadata.
+            ConfigContent with formatted content and metadata.
 
         Raises:
             ValueError: If the resource type in the request does not match
@@ -55,6 +56,20 @@ class IConfigurationGenerator(ABC):
             ValidationError: If required parameters are missing or invalid.
             GenerationError: If configuration generation fails unexpectedly.
         """
+
+    def generate_tfvars(
+        self,
+        structured_request: StructuredRequest,
+        golden_module: ModuleSchema,
+        naming_conventions: Optional[NamingConventions] = None,
+    ) -> ConfigContent:
+        """Backward-compatible alias for :meth:`generate_configuration`.
+
+        Deprecated: use :meth:`generate_configuration` for new code.
+        """
+        return self.generate_configuration(
+            structured_request, golden_module, naming_conventions
+        )
 
     @abstractmethod
     def apply_naming_conventions(

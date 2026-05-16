@@ -10,5 +10,11 @@
 # Module path : modules/dynamodb_table
 # Module ver  : 1.0.0
 # =============================================================================
+billing_mode = "PAY_PER_REQUEST"  # Billing mode (PAY_PER_REQUEST or PROVISIONED)
 environment = "dev"  # Deployment environment
-name = "mycompany-sessions-dev"  # Name of the dynamodb_table
+hash_key = "id"  # Partition key name
+table_name = "mycompany-sessions-dev"  # Name of the DynamoDB table
+
+# --- Security parameters (managed by Golden Module) ---
+point_in_time_recovery = true  # Enable point-in-time recovery
+server_side_encryption = true  # Enable server-side encryption

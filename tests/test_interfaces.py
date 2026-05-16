@@ -11,6 +11,7 @@ from typing import Optional
 import pytest
 
 from src.bedrock_iac_agent import (
+    ConfigContent,
     ConfigurationGenerator,
     Environment,
     GoldenModulesInventory,
@@ -68,11 +69,17 @@ class TestIConfigurationGeneratorIsABC:
         with pytest.raises(TypeError):
             IConfigurationGenerator()  # type: ignore[abstract]
 
-    def test_has_generate_tfvars_abstract_method(self):
-        """generate_tfvars must be declared as an abstract method."""
-        method = getattr(IConfigurationGenerator, "generate_tfvars", None)
+    def test_has_generate_configuration_abstract_method(self):
+        """generate_configuration must be declared as an abstract method."""
+        method = getattr(IConfigurationGenerator, "generate_configuration", None)
         assert method is not None
         assert getattr(method, "__isabstractmethod__", False)
+
+    def test_has_generate_tfvars_non_abstract_method(self):
+        """generate_tfvars must be present as a concrete backward-compatible alias."""
+        method = getattr(IConfigurationGenerator, "generate_tfvars", None)
+        assert method is not None
+        assert not getattr(method, "__isabstractmethod__", False)
 
     def test_has_apply_naming_conventions_abstract_method(self):
         """apply_naming_conventions must be declared as an abstract method."""
@@ -95,7 +102,7 @@ class TestIConfigurationGeneratorIsABC:
     def test_abstract_methods_set(self):
         """All four abstract methods must be present."""
         abstract_methods = IConfigurationGenerator.__abstractmethods__
-        assert "generate_tfvars" in abstract_methods
+        assert "generate_configuration" in abstract_methods
         assert "apply_naming_conventions" in abstract_methods
         assert "validate_parameters" in abstract_methods
         assert "add_comments" in abstract_methods
@@ -298,8 +305,8 @@ class TestInterfaceSubstitutability:
         class MinimalGenerator(IConfigurationGenerator):
             """Minimal concrete implementation for testing extensibility."""
 
-            def generate_tfvars(self, structured_request, golden_module, naming_conventions=None):
-                return TfvarsContent(
+            def generate_configuration(self, structured_request, golden_module, naming_conventions=None):
+                return ConfigContent(
                     content="# minimal\n",
                     file_path="test.tfvars",
                     environment=structured_request.environment,
@@ -321,8 +328,10 @@ class TestInterfaceSubstitutability:
 
         schema = INVENTORY.get_module_schema(ResourceType.S3_BUCKET)
         request = make_request(parameters={"bucket_name": "test"})
+        result = gen.generate_configuration(request, schema)
+        assert isinstance(result, ConfigContent)
         result = gen.generate_tfvars(request, schema)
-        assert isinstance(result, TfvarsContent)
+        assert isinstance(result, ConfigContent)
 
     def test_custom_inventory_can_implement_interface(self):
         """A custom inventory class can implement IModuleInventory (Req 15.1, 15.4)."""
@@ -478,10 +487,27 @@ class TestTerraformBackwardCompatibility:
         gen = ConfigurationGenerator()
         inv = GoldenModulesInventory()
 
+        def _default_value(param_type: str):
+            if param_type == "string":
+                return "test-value"
+            if param_type == "number":
+                return 42
+            if param_type == "bool":
+                return True
+            if param_type == "list":
+                return ["test-value"]
+            if param_type == "map":
+                return {}
+            return "test-value"
+
         for resource_type in ResourceType:
             schema = inv.get_module_schema(resource_type)
-            # Build minimal valid parameters
-            params = {p.name: "test-value" for p in schema.required_parameters if p.name != "environment"}
+            # Build minimal valid parameters with type-appropriate dummy values
+            params = {
+                p.name: _default_value(p.type)
+                for p in schema.required_parameters
+                if p.name != "environment"
+            }
             request = StructuredRequest(
                 resource_type=resource_type,
                 parameters=params,
@@ -492,5 +518,5 @@ class TestTerraformBackwardCompatibility:
                 timestamp=datetime(2024, 1, 15),
             )
             result = gen.generate_tfvars(request, schema)
-            assert isinstance(result, TfvarsContent), f"Failed for {resource_type}"
+            assert isinstance(result, ConfigContent), f"Failed for {resource_type}"
             assert result.resource_type == resource_type

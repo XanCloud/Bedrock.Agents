@@ -635,6 +635,470 @@ class GoldenModulesInventory(IModuleInventory):
                 description="Lambda function with IAM role and CloudWatch logging",
                 version="1.0.0"
             ),
+            ResourceType.API_GATEWAY: ModuleSchema(
+                resource_type=ResourceType.API_GATEWAY,
+                module_path="modules/api_gateway",
+                required_parameters=[
+                    Parameter(
+                        name="api_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the API Gateway",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="endpoint_type",
+                        type="string",
+                        required=False,
+                        default="REGIONAL",
+                        description="API endpoint type (REGIONAL, EDGE, PRIVATE)",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="enable_waf",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable AWS WAF integration",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="enable_cloudwatch_metrics",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable detailed CloudWatch metrics",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{api_name}",
+                description="API Gateway with authentication and throttling",
+                version="1.0.0"
+            ),
+            ResourceType.DYNAMODB_TABLE: ModuleSchema(
+                resource_type=ResourceType.DYNAMODB_TABLE,
+                module_path="modules/dynamodb_table",
+                required_parameters=[
+                    Parameter(
+                        name="table_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the DynamoDB table",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="hash_key",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Partition key name",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="range_key",
+                        type="string",
+                        required=False,
+                        default=None,
+                        description="Sort key name",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="billing_mode",
+                        type="string",
+                        required=False,
+                        default="PAY_PER_REQUEST",
+                        description="Billing mode (PAY_PER_REQUEST or PROVISIONED)",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="point_in_time_recovery",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable point-in-time recovery",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="server_side_encryption",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable server-side encryption",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{table_name}",
+                description="DynamoDB table with encryption and point-in-time recovery",
+                version="1.0.0"
+            ),
+            ResourceType.VPC: ModuleSchema(
+                resource_type=ResourceType.VPC,
+                module_path="modules/vpc",
+                required_parameters=[
+                    Parameter(
+                        name="vpc_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the VPC",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="cidr_block",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="CIDR block for the VPC (e.g. 10.0.0.0/16)",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="availability_zones",
+                        type="list",
+                        required=False,
+                        default="[\"a\", \"b\", \"c\"]",
+                        description="Availability zones to use",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="enable_flow_logs",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable VPC flow logs",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="enable_network_acl",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable strict network ACLs",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{vpc_name}",
+                description="VPC with public and private subnets",
+                version="1.0.0"
+            ),
+            ResourceType.SECURITY_GROUP: ModuleSchema(
+                resource_type=ResourceType.SECURITY_GROUP,
+                module_path="modules/security_group",
+                required_parameters=[
+                    Parameter(
+                        name="security_group_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the security group",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="vpc_id",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="VPC ID to associate the security group with",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="description",
+                        type="string",
+                        required=False,
+                        default="Managed by Bedrock IaC Agent",
+                        description="Security group description",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="allow_all_ingress",
+                        type="bool",
+                        required=True,
+                        default="false",
+                        description="Deny all ingress by default",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="enable_flow_logs",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable flow logging for the security group",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{security_group_name}",
+                description="Security group with restrictive default rules",
+                version="1.0.0"
+            ),
+            ResourceType.IAM_ROLE: ModuleSchema(
+                resource_type=ResourceType.IAM_ROLE,
+                module_path="modules/iam_role",
+                required_parameters=[
+                    Parameter(
+                        name="role_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the IAM role",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="trusted_services",
+                        type="list",
+                        required=True,
+                        default=None,
+                        description="AWS services that can assume this role",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="max_session_duration",
+                        type="number",
+                        required=False,
+                        default="3600",
+                        description="Maximum session duration in seconds",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="require_mfa",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Require MFA for role assumption",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="enforce_least_privilege",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enforce least privilege policy review",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{role_name}",
+                description="IAM role with least privilege policies",
+                version="1.0.0"
+            ),
+            ResourceType.CLOUDWATCH_LOG_GROUP: ModuleSchema(
+                resource_type=ResourceType.CLOUDWATCH_LOG_GROUP,
+                module_path="modules/cloudwatch_log_group",
+                required_parameters=[
+                    Parameter(
+                        name="log_group_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the CloudWatch log group",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="kms_key_id",
+                        type="string",
+                        required=False,
+                        default=None,
+                        description="KMS key ID for log group encryption",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="retention_in_days",
+                        type="number",
+                        required=True,
+                        default="30",
+                        description="Log retention period in days",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="encryption_enabled",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable log group encryption",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{log_group_name}",
+                description="CloudWatch log group with retention policies",
+                version="1.0.0"
+            ),
+            ResourceType.SNS_TOPIC: ModuleSchema(
+                resource_type=ResourceType.SNS_TOPIC,
+                module_path="modules/sns_topic",
+                required_parameters=[
+                    Parameter(
+                        name="topic_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the SNS topic",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="fifo_topic",
+                        type="bool",
+                        required=False,
+                        default="false",
+                        description="Whether to create a FIFO topic",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="encryption_enabled",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable server-side encryption",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="enforce_ssl",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enforce SSL-only access",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{topic_name}",
+                description="SNS topic with encryption and access policies",
+                version="1.0.0"
+            ),
+            ResourceType.SQS_QUEUE: ModuleSchema(
+                resource_type=ResourceType.SQS_QUEUE,
+                module_path="modules/sqs_queue",
+                required_parameters=[
+                    Parameter(
+                        name="queue_name",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Name of the SQS queue",
+                        is_security_parameter=False
+                    ),
+                    Parameter(
+                        name="environment",
+                        type="string",
+                        required=True,
+                        default=None,
+                        description="Deployment environment",
+                        is_security_parameter=False
+                    ),
+                ],
+                optional_parameters=[
+                    Parameter(
+                        name="visibility_timeout_seconds",
+                        type="number",
+                        required=False,
+                        default="30",
+                        description="Visibility timeout in seconds",
+                        is_security_parameter=False
+                    ),
+                ],
+                security_parameters=[
+                    Parameter(
+                        name="encryption_enabled",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable server-side encryption",
+                        is_security_parameter=True
+                    ),
+                    Parameter(
+                        name="dead_letter_queue_enabled",
+                        type="bool",
+                        required=True,
+                        default="true",
+                        description="Enable dead letter queue",
+                        is_security_parameter=True
+                    ),
+                ],
+                naming_pattern="{project}-{env}-{queue_name}",
+                description="SQS queue with encryption and dead letter queue",
+                version="1.0.0"
+            ),
         }
         
         # For resource types not explicitly defined, create a minimal schema

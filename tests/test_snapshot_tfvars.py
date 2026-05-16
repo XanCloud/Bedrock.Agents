@@ -181,56 +181,56 @@ SNAPSHOT_CASES = [
     (
         ResourceType.API_GATEWAY,
         Environment.DEVELOPMENT,
-        {"name": "rest-api"},
+        {"api_name": "rest-api"},
         "req-apigw-dev",
     ),
     # DynamoDB Table
     (
         ResourceType.DYNAMODB_TABLE,
         Environment.DEVELOPMENT,
-        {"name": "sessions"},
+        {"table_name": "sessions", "hash_key": "id"},
         "req-dynamo-dev",
     ),
     # VPC
     (
         ResourceType.VPC,
         Environment.DEVELOPMENT,
-        {"name": "main"},
+        {"vpc_name": "main", "cidr_block": "10.0.0.0/16"},
         "req-vpc-dev",
     ),
     # Security Group
     (
         ResourceType.SECURITY_GROUP,
         Environment.DEVELOPMENT,
-        {"name": "app-sg"},
+        {"security_group_name": "app-sg", "vpc_id": "vpc-12345678"},
         "req-sg-dev",
     ),
     # IAM Role
     (
         ResourceType.IAM_ROLE,
         Environment.DEVELOPMENT,
-        {"name": "lambda-exec"},
+        {"role_name": "lambda-exec", "trusted_services": ["lambda.amazonaws.com"]},
         "req-iam-dev",
     ),
     # CloudWatch Log Group
     (
         ResourceType.CLOUDWATCH_LOG_GROUP,
         Environment.DEVELOPMENT,
-        {"name": "app-logs"},
+        {"log_group_name": "app-logs"},
         "req-cw-dev",
     ),
     # SNS Topic
     (
         ResourceType.SNS_TOPIC,
         Environment.DEVELOPMENT,
-        {"name": "alerts"},
+        {"topic_name": "alerts"},
         "req-sns-dev",
     ),
     # SQS Queue
     (
         ResourceType.SQS_QUEUE,
         Environment.DEVELOPMENT,
-        {"name": "job-queue"},
+        {"queue_name": "job-queue"},
         "req-sqs-dev",
     ),
 ]

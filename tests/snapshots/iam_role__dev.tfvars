@@ -11,4 +11,10 @@
 # Module ver  : 1.0.0
 # =============================================================================
 environment = "dev"  # Deployment environment
-name = "mycompany-lambda-exec-dev"  # Name of the iam_role
+max_session_duration = 3600  # Maximum session duration in seconds
+role_name = "mycompany-lambda-exec-dev"  # Name of the IAM role
+trusted_services = ["lambda.amazonaws.com"]  # AWS services that can assume this role
+
+# --- Security parameters (managed by Golden Module) ---
+enforce_least_privilege = true  # Enforce least privilege policy review
+require_mfa = true  # Require MFA for role assumption

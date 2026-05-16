@@ -201,22 +201,22 @@ class BedrockIaCAgent:
                 context.history.append({"role": "assistant", "content": response.message})
                 return response
 
-            # --- Generate tfvars (Requirements 3.1–3.6) ---
+            # --- Generate configuration (Requirements 3.1–3.6) ---
             golden_module = self.modules_inventory.get_module_schema(
                 structured_request.resource_type
             )
-            tfvars = self.config_generator.generate_tfvars(
+            config = self.config_generator.generate_configuration(
                 structured_request,
                 golden_module,
                 self.naming_conventions,
             )
 
             # Log the generated configuration (Requirement 14.2)
-            self.audit_logger.log_configuration(structured_request, tfvars.content)
+            self.audit_logger.log_configuration(structured_request, config.content)
 
             # --- Confirmation gate (Requirement 13.4) ---
             if self.require_confirmation:
-                summary = self._build_confirmation_summary(structured_request, tfvars)
+                summary = self._build_confirmation_summary(structured_request, config)
                 context.pending_clarifications.append("__awaiting_confirmation__")
                 response = AgentResponse(
                     message=summary,
@@ -231,7 +231,7 @@ class BedrockIaCAgent:
                 return response
 
             # --- Create GitHub PR (Requirements 5–6) ---
-            pr_url = self._create_pull_request(structured_request, tfvars, context)
+            pr_url = self._create_pull_request(structured_request, config, context)
 
             # --- Build success response (Requirements 7.1–7.4) ---
             response = self._build_success_response(structured_request, pr_url)
@@ -284,11 +284,11 @@ class BedrockIaCAgent:
             )
             response = AgentResponse(
                 message=(
-                    "Ocurrió un error inesperado al procesar tu solicitud. "
-                    "Por favor intenta de nuevo o contacta soporte si el problema persiste."
+                    "An unexpected error occurred while processing your request. "
+                    "Please try again or contact support if the problem persists."
                 ),
                 status="error",
-                next_steps=["Intenta reformular tu solicitud.", "Contacta soporte si el problema persiste."],
+                next_steps=["Try rephrasing your request.", "Contact support if the problem persists."],
                 metadata={"error": str(exc)},
             )
             context.history.append({"role": "assistant", "content": response.message})
@@ -441,9 +441,9 @@ class BedrockIaCAgent:
         elif user_input.strip().lower() in ("no", "n", "cancel", "abort"):
             context.current_request = None
             response = AgentResponse(
-                message="Creación del Pull Request cancelada. Avísame cuando quieras empezar de nuevo.",
+                message="Pull Request creation cancelled. Let me know when you want to start again.",
                 status="success",
-                next_steps=["Inicia una nueva solicitud cuando estés listo."],
+                next_steps=["Start a new request whenever you're ready."],
             )
             context.history.append({"role": "assistant", "content": response.message})
             return response
@@ -485,9 +485,9 @@ class BedrockIaCAgent:
         elif answer in ("no", "n", "cancel", "abort"):
             context.current_request = None
             response = AgentResponse(
-                message="Creación del Pull Request cancelada. Avísame cuando quieras empezar de nuevo.",
+                message="Pull Request creation cancelled. Let me know when you want to start again.",
                 status="success",
-                next_steps=["Inicia una nueva solicitud cuando estés listo."],
+                next_steps=["Start a new request whenever you're ready."],
             )
             context.history.append({"role": "assistant", "content": response.message})
             return response
@@ -514,13 +514,13 @@ class BedrockIaCAgent:
             golden_module = self.modules_inventory.get_module_schema(
                 structured_request.resource_type
             )
-            tfvars = self.config_generator.generate_tfvars(
+            config = self.config_generator.generate_configuration(
                 structured_request,
                 golden_module,
                 self.naming_conventions,
             )
-            self.audit_logger.log_configuration(structured_request, tfvars.content)
-            pr_url = self._create_pull_request(structured_request, tfvars, context)
+            self.audit_logger.log_configuration(structured_request, config.content)
+            pr_url = self._create_pull_request(structured_request, config, context)
             response = self._build_success_response(structured_request, pr_url)
             context.history.append({"role": "assistant", "content": response.message})
             context.current_request = None
@@ -532,11 +532,11 @@ class BedrockIaCAgent:
             logger.exception("Unexpected error during PR creation: %s", exc)
             response = AgentResponse(
                 message=(
-                    "Ocurrió un error inesperado al crear el Pull Request. "
-                    "Por favor intenta de nuevo."
+                    "An unexpected error occurred while creating the Pull Request. "
+                    "Please try again."
                 ),
                 status="error",
-                next_steps=["Intenta de nuevo o contacta soporte."],
+                next_steps=["Try again or contact support."],
                 metadata={"error": str(exc)},
             )
             context.history.append({"role": "assistant", "content": response.message})
@@ -545,14 +545,14 @@ class BedrockIaCAgent:
     def _create_pull_request(
         self,
         structured_request: StructuredRequest,
-        tfvars: Any,
+        config: Any,
         context: ConversationContext,
     ) -> Optional[str]:
-        """Clone the repo, commit the tfvars file, and open a Pull Request.
+        """Clone the repo, commit the configuration file, and open a Pull Request.
 
         Args:
             structured_request: The validated request.
-            tfvars: The generated :class:`~bedrock_iac_agent.models.TfvarsContent`.
+            config: The generated :class:`~bedrock_iac_agent.models.ConfigContent`.
             context: Current conversation context.
 
         Returns:
@@ -584,15 +584,15 @@ class BedrockIaCAgent:
         )
         branch = self.github_integration.create_branch(repo, branch_name)
 
-        # Commit the tfvars file (Requirement 5.4)
+        # Commit the configuration file (Requirement 5.4)
         file_change = FileChange(
-            file_path=tfvars.file_path,
-            content=tfvars.content,
+            file_path=config.file_path,
+            content=config.content,
             operation="add",
         )
         commit_message = (
             f"feat(iac-agent): add {structured_request.resource_type.value} "
-            f"tfvars for {structured_request.environment.value}\n\n"
+            f"configuration for {structured_request.environment.value}\n\n"
             f"Request ID: {structured_request.request_id}\n"
             f"Requested by: {context.user_id}\n"
             f"Justification: {structured_request.user_justification}"
@@ -665,29 +665,29 @@ class BedrockIaCAgent:
         if pr_url:
             # Requirement 7.1: Notify user with the full PR URL
             message = (
-                f"✅ ¡Pull Request creado exitosamente!\n\n"
-                f"Recurso: {resource}\n"
-                f"Ambiente: {env}\n"
-                f"URL del PR: {pr_url}\n\n"
+                f"✅ Pull Request created successfully!\n\n"
+                f"Resource: {resource}\n"
+                f"Environment: {env}\n"
+                f"PR URL: {pr_url}\n\n"
                 f"{changes_summary}"
             )
             # Requirement 7.3: Indicate next steps required
             next_steps = [
-                f"Revisa el Pull Request en: {pr_url}",
-                "Aprueba el PR después de verificar la configuración.",
-                "Haz merge del PR para activar el pipeline de despliegue de Terraform.",
+                f"Review the Pull Request at: {pr_url}",
+                "Approve the PR after verifying the configuration.",
+                "Merge the PR to trigger the Terraform deployment pipeline.",
             ]
         else:
             message = (
-                f"✅ ¡Configuración generada exitosamente!\n\n"
-                f"Recurso: {resource}\n"
-                f"Ambiente: {env}\n\n"
+                f"✅ Configuration generated successfully!\n\n"
+                f"Resource: {resource}\n"
+                f"Environment: {env}\n\n"
                 f"{changes_summary}\n"
-                "(Integración con GitHub no configurada — no se creó ningún PR.)"
+                "(GitHub integration not configured — no PR was created.)"
             )
             next_steps = [
-                "Configura la integración con GitHub para habilitar la creación automática de PRs.",
-                "Revisa la configuración tfvars generada.",
+                "Configure the GitHub integration to enable automatic PR creation.",
+                "Review the generated configuration.",
             ]
 
         return AgentResponse(
@@ -733,7 +733,7 @@ class BedrockIaCAgent:
     def _build_confirmation_summary(
         self,
         structured_request: StructuredRequest,
-        tfvars: Any,
+        config: Any,
     ) -> str:
         """Build a human-readable summary for the confirmation prompt.
 
@@ -741,7 +741,7 @@ class BedrockIaCAgent:
 
         Args:
             structured_request: The request to summarise.
-            tfvars: The generated tfvars content.
+            config: The generated configuration content.
 
         Returns:
             A formatted summary string.
@@ -753,7 +753,7 @@ class BedrockIaCAgent:
             f"I'm about to create a Pull Request with the following configuration:\n\n"
             f"Resource: {structured_request.resource_type.value}\n"
             f"Environment: {structured_request.environment.value}\n"
-            f"File: {tfvars.file_path}\n"
+            f"File: {config.file_path}\n"
             + (f"Parameters:\n{params_summary}\n" if params_summary else "")
             + f"\nJustification: {structured_request.user_justification}\n\n"
             "Reply 'yes' to confirm or 'no' to cancel."

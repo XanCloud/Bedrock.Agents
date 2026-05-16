@@ -10,5 +10,11 @@
 # Module path : modules/vpc
 # Module ver  : 1.0.0
 # =============================================================================
+availability_zones = "["a", "b", "c"]"  # Availability zones to use
+cidr_block = "10.0.0.0/16"  # CIDR block for the VPC (e.g. 10.0.0.0/16)
 environment = "dev"  # Deployment environment
-name = "mycompany-main-dev"  # Name of the vpc
+vpc_name = "mycompany-main-dev"  # Name of the VPC
+
+# --- Security parameters (managed by Golden Module) ---
+enable_flow_logs = true  # Enable VPC flow logs
+enable_network_acl = true  # Enable strict network ACLs

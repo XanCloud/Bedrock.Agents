@@ -11,4 +11,9 @@
 # Module ver  : 1.0.0
 # =============================================================================
 environment = "dev"  # Deployment environment
-name = "mycompany-alerts-dev"  # Name of the sns_topic
+fifo_topic = false  # Whether to create a FIFO topic
+topic_name = "mycompany-alerts-dev"  # Name of the SNS topic
+
+# --- Security parameters (managed by Golden Module) ---
+encryption_enabled = true  # Enable server-side encryption
+enforce_ssl = true  # Enforce SSL-only access

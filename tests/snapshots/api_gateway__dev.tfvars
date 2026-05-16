@@ -10,5 +10,10 @@
 # Module path : modules/api_gateway
 # Module ver  : 1.0.0
 # =============================================================================
+api_name = "mycompany-rest-api-dev"  # Name of the API Gateway
+endpoint_type = "REGIONAL"  # API endpoint type (REGIONAL, EDGE, PRIVATE)
 environment = "dev"  # Deployment environment
-name = "mycompany-rest-api-dev"  # Name of the api_gateway
+
+# --- Security parameters (managed by Golden Module) ---
+enable_cloudwatch_metrics = true  # Enable detailed CloudWatch metrics
+enable_waf = true  # Enable AWS WAF integration

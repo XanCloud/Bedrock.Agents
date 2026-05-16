@@ -11,4 +11,9 @@
 # Module ver  : 1.0.0
 # =============================================================================
 environment = "dev"  # Deployment environment
-name = "mycompany-job-queue-dev"  # Name of the sqs_queue
+queue_name = "mycompany-job-queue-dev"  # Name of the SQS queue
+visibility_timeout_seconds = 30  # Visibility timeout in seconds
+
+# --- Security parameters (managed by Golden Module) ---
+dead_letter_queue_enabled = true  # Enable dead letter queue
+encryption_enabled = true  # Enable server-side encryption

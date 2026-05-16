@@ -11,4 +11,8 @@
 # Module ver  : 1.0.0
 # =============================================================================
 environment = "dev"  # Deployment environment
-name = "mycompany-app-logs-dev"  # Name of the cloudwatch_log_group
+log_group_name = "mycompany-app-logs-dev"  # Name of the CloudWatch log group
+
+# --- Security parameters (managed by Golden Module) ---
+encryption_enabled = true  # Enable log group encryption
+retention_in_days = 30  # Log retention period in days
