@@ -22,7 +22,7 @@ PR URL: https://github.com/my-org/my-infra-repo/pull/42
 - **Terraform tfvars generation** — produces valid HCL files from Golden Module schemas
 - **GitHub automation** — clones the repo, creates a branch, commits, and opens a PR
 - **Security by default** — Golden Modules enforce encryption, versioning, and least-privilege settings that cannot be overridden
-- **Cost-optimised AI** — uses economic AWS Bedrock models (Claude Haiku, Nova Micro/Lite)
+- **Cost-optimised AI** — uses economic AWS Bedrock models (Nova Micro as default)
 - **Audit logging** — every request, configuration, and PR is logged in structured JSON
 - **Conversational context** — maintains session state across multiple turns
 - **12 Golden Modules** — covers the most common AWS resource types out of the box
@@ -30,7 +30,7 @@ PR URL: https://github.com/my-org/my-infra-repo/pull/42
 ## Requirements
 
 - Python 3.9 or higher
-- AWS account with Bedrock access (Claude Haiku or another supported model enabled in your region)
+- AWS account with Bedrock access (Amazon Nova Micro or another supported model enabled in your region)
 - GitHub personal access token with `repo` and `pull_request` scopes
 - AWS credentials configured (via `~/.aws/credentials`, environment variables, or an IAM role)
 
@@ -85,7 +85,7 @@ github:
 
 # AWS Bedrock model and region settings
 bedrock:
-  model_id: "anthropic.claude-3-haiku-20240307-v1:0"  # Default model
+  model_id: "amazon.nova-micro-v1:0"  # Default model (most cost-efficient)
   region: "us-east-1"
   aws_profile: null                  # Optional named profile from ~/.aws/config
 
@@ -384,13 +384,13 @@ mypy src/
 
 ### Supported Bedrock models
 
-The default model is `anthropic.claude-3-haiku-20240307-v1:0`. Other economic options:
+The default model is `amazon.nova-micro-v1:0` — Amazon's most economical option. Alternatives:
 
 | Model ID                                  | Notes                        |
 |-------------------------------------------|------------------------------|
-| `anthropic.claude-3-haiku-20240307-v1:0`  | Default — fast and cheap     |
-| `amazon.nova-micro-v1:0`                  | Amazon's most economical     |
+| `amazon.nova-micro-v1:0`                  | Default — most cost-efficient|
 | `amazon.nova-lite-v1:0`                   | Slightly more capable        |
+| `anthropic.claude-3-haiku-20240307-v1:0`  | Alternative — requires model access request in AWS console |
 
 Set the model via `config.yaml` or the `BEDROCK_MODEL_ID` environment variable.
 

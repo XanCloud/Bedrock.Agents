@@ -66,9 +66,9 @@ github:
 # economic models to keep operational costs low.
 #
 # Supported economic models (cheapest first):
-#   anthropic.claude-3-haiku-20240307-v1:0  ← default, fast and cheap
-#   amazon.nova-micro-v1:0                  ← Amazon's most economical
+#   amazon.nova-micro-v1:0                  ← default, Amazon's most economical
 #   amazon.nova-lite-v1:0                   ← slightly more capable
+#   anthropic.claude-3-haiku-20240307-v1:0  ← alternative, fast but requires access request
 #
 # Before using a model, enable it in the AWS console:
 #   Amazon Bedrock → Model access → Enable the model for your region
@@ -82,7 +82,7 @@ github:
 bedrock:
   # Bedrock model ID for natural language parsing.
   # Override with: export BEDROCK_MODEL_ID="amazon.nova-micro-v1:0"
-  model_id: "anthropic.claude-3-haiku-20240307-v1:0"
+  model_id: "amazon.nova-micro-v1:0"
 
   # AWS region where Bedrock is available.
   # Bedrock is available in: us-east-1, us-west-2, eu-west-1, ap-southeast-1, and others.
